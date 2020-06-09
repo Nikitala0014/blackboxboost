@@ -8,10 +8,6 @@ Getting started
 ===============
 
 Install blackboxboost from PyPI
-'''python
-<& pip install blackboxboost>
-'''
-
-'''
-import blackboxboost
-'''
+```
+& pip install blackboxboost
+```
