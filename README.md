@@ -9,5 +9,5 @@ Getting started
 
 Install blackboxboost from PyPI
 '''python
-& pip install blackboxboost
+<& pip install blackboxboost>
 '''
