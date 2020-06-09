@@ -8,7 +8,7 @@ Getting started
 ===============
 
 '''
-code block
+{python} {code block}
 '''
 
 Install blackboxboost from PyPI
