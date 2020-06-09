@@ -7,11 +7,7 @@ bayesian optimization, as well as an ensemble of the best parameters obtained in
 Getting started
 ===============
 
-'''
-{python} {code block}
-'''
-
 Install blackboxboost from PyPI
-'''
-&pip install blackboxboost
+'''python
+pip install blackboxboost
 '''
