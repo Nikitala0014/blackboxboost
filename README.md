@@ -11,3 +11,7 @@ Install blackboxboost from PyPI
 '''python
 <& pip install blackboxboost>
 '''
+
+'''
+import blackboxboost
+'''
