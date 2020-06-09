@@ -8,4 +8,6 @@ Getting started
 ===============
 
 Install blackboxboost from PyPI
+'''
 & pip install blackboxboost
+'''
