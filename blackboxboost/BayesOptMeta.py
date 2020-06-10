@@ -3,7 +3,7 @@ from blackboxboost.BayesOpt import xgb_para
 import pandas as pd 
 import numpy as np
 from scipy.sparse import csr_matrix
-from sklearn.ensemble import VotingRegressor
+from sklearn.ensemble import VotingRegressor, VotingClassifier
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import normalize
 from sklearn.model_selection import train_test_split
