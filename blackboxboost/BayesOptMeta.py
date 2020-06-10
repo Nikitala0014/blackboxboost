@@ -37,7 +37,7 @@ class BayesOptMeta:
         except Exception as e:
             return {'status': STATUS_FAIL, 'exception': str(e)}
         
-        return result
+        return trials
     
     def process_xgb_reg_meta(self, max_evals, meta_params):
         trials =  generate_trials_to_calculate([meta_params])
@@ -100,7 +100,11 @@ class BayesOptMeta:
 
         feature_ = csr_matrix(feature_data)
 
-        kmeans_clf = pickle.load(open('/Users/Nikita/Desktop/classification datasets/kmeans_clf.pkl', 'rb'))
+        url = 'https://raw.githubusercontent.com/Nikitala0014/blackboxboost/master/blackboxboost/feature_data_clf.csv'
+        feature_clf = pd.read_csv(url, index_col=0)
+        feature_clf = feature_clf.drop([12], axis=0)
+        kmeans_clf = KMeans(n_clusters=3, random_state=2)
+        kmeans_clf.fit(feature_clf)
 
         meta_params_0_clf = {'subsample': 0.85871509130206, 'n_estimators': 548, 'colsample_bytree': 0.6159585946755198, 'max_depth': 6, 'learning_rate': 0.1519163133871961, 'min_child_weight': 0}
         meta_params_1_clf = {'subsample': 0.8910152781465692, 'n_estimators': 264, 'colsample_bytree': 0.5534115708933309, 'max_depth': 9, 'learning_rate': 0.10132128433332305, 'min_child_weight': 0}    
@@ -139,7 +143,11 @@ class BayesOptMeta:
 
         feature_ = csr_matrix(feature_data)
 
-        kmeans_reg = pickle.load(open('/Users/Nikita/Desktop/reg_openml/model_reg.pkl', 'rb'))
+        url = 'https://raw.githubusercontent.com/Nikitala0014/blackboxboost/master/blackboxboost/feature_data_reg.csv'
+        feature_reg = pd.read_csv(url, index_col=0)
+        feature_reg = feature_reg.drop([2, 4], axis=0)
+        kmeans_reg = KMeans(n_clusters=3, random_state=1)
+        kmeans_reg.fit(feature_reg)
 
         meta_params_0_reg = {'n_estimators': 547, 'learning_rate': 0.14502110379186764, 'subsample': 0.8802447552806882, 'min_child_weight': 2, 'max_depth': 5, 'colsample_bytree': 0.6338079055523455}
         meta_params_1_reg = {'n_estimators': 482, 'learning_rate': 0.11999175898448614, 'subsample': 0.8842506424173399, 'min_child_weight': 3, 'max_depth': 3, 'colsample_bytree': 0.6768310665291043}
@@ -155,7 +163,7 @@ class BayesOptMeta:
 
 
     def params_to_ensemble(self, fn_name, space, algo, max_evals):
-        _, trials = self.process_meta(fn_name, space, algo, max_evals)
+        trials = self.process_meta(fn_name, space, algo, max_evals)
         loss_and_param = []
         for i in trials.trials:
             for k, v in i.items():
@@ -187,7 +195,7 @@ class BayesOptMeta:
 
         model_ensemble = VotingRegressor([(name, model) for name, model in models_to_voting.items()])
 
-        return model_ensemble
+        return model_ensemble, best_params
 
     def ensemble_of_best_params_xgb_clf(self, max_evals):
         best_params = self.params_to_ensemble(fn='xgb_clf', space=xgb_para, trials=trials, algo=tpe.suggest, max_evals=max_evals)
@@ -199,7 +207,7 @@ class BayesOptMeta:
 
         model_ensemble = VotingClassifier([(name, model) for name, model in models_to_voting.items()])
 
-        return model_ensemble
+        return model_ensemble, best_params
 
 
     def xgb_reg(self, para):
