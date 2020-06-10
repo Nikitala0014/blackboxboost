@@ -90,3 +90,7 @@ This algorithm is based on the MAML algorithm and is optimized for hyperparamete
 #You must set the task parameter as 'reg' or 'clf'.
 meta_learn_params = bbb.metalearn.MetaLearn(train_data, test_data, epochs, max_evals_train, max_evals_test).train(task=None)
 ```
+Future work
+===========
+This repository, this library is just a test version, the first step on my part is to automate machine learning, in order to make machine learning an affordable tool for all developers.
+The next steps will be towards deep learning and meta-learning, not only for hyperparameters, but also for weights and models.
