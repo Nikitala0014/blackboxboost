@@ -46,11 +46,29 @@ class BayesOpt:
         except Exception as e:
             return {'status': STATUS_FAIL, 'exception': str(e)}
         
-        return result, trials
+        return trials
+    
+    def process_xgb_reg(self, max_evals):
+        trials =  Trials()
+        try:
+            result = fmin(fn=self.xgb_reg, space=xgb_para, trials=trials, algo=tpe.suggest, max_evals=max_evals)
+        except Exception as e:
+            return {'status': STATUS_FAIL, 'exception': str(e)}
+
+        return result
+
+    def process_xgb_clf(self, max_evals):
+        trials =  Trials()
+        try:
+            result = fmin(fn=self.xgb_clf, space=xgb_para, trials=trials, algo=tpe.suggest, max_evals=max_evals)
+        except Exception as e:
+            return {'status': STATUS_FAIL, 'exception': str(e)}
+
+        return result
 
 
     def params_to_ensemble(self, fn_name, space, algo, max_evals):
-        _, trials = self.process(fn_name, space, algo, max_evals)
+        trials = self.process(fn_name, space, algo, max_evals)
         loss_and_param = []
         for i in trials.trials:
             for k, v in i.items():
@@ -91,8 +109,8 @@ class BayesOpt:
 
         models_to_voting = {}
         for i in range(len(best_params)):
-            reg = xgb.XGBClassifier(**best_params[i])
-            models_to_voting[str(i)] = reg
+            clf = xgb.XGBClassifier(**best_params[i])
+            models_to_voting[str(i)] = clf
 
         model_ensemble = VotingClassifier([(name, model) for name, model in models_to_voting.items()])
         model_ensemble.fit(self.data, self.labels)
