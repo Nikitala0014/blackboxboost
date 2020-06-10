@@ -11,13 +11,13 @@ Install blackboxboost from PyPI
 ```
 & pip install blackboxboost
 ```
-You can do Bayesian optimization with initial parameters (obtained using meta-learning) or without.
-
-With meta-learning
+Data preprocessing
 ------------------
 ```
 import blackboxboost as bbb
 ```
+Use this if the test data is independent of the training data, for example, you do not need to pass the 
+test data to the algorithm as in the kaggle, because there you need the same number of columns:
 ```
 # Works with missing and categorical values and also normalizes.
 # You must use this or your methods before passing to the methods clf or reg below.
@@ -26,6 +26,18 @@ train_data = bbb.preprocess_for_meta.DataPreprocess(train_).normalize()
 # Without normalization, only categorical and missing values.
 train_data = bbb.preprocess_for_meta.CatVariables(train_).oh_cols()
 ```
+Use this if you have test data for which you need to build and train a model:
+```
+# Works with missing and categorical values and also normalizes.
+right_train, right_test = bbb.preprocess_data.DataPreprocess(train_data, test_data).normalize()
+
+# Without normalization, only categorical and missing values.
+right_train, right_test = bbb.preprocess_data.CatVariables(train_data, test_data).oh_cols()
+```
+You can do Bayesian optimization with initial parameters (obtained using meta-learning) or without.
+======================
+With meta-learning
+------------------
 ```
 # classification
 # Parameter in process_xgb_clf means the number of epochs of bayesian optimization.
