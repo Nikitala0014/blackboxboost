@@ -86,3 +86,7 @@ Meta-Learning
 -------------
 If you want to try the meta-learning algorithm for your tasks, then you need two training and test lists, there should be data sets similar to yours for which you will use hyperparameters.
 This algorithm is based on the MAML algorithm and is optimized for hyperparameters while the MAML is built for weights.
+```
+#You must set the task parameter as 'reg' or 'clf'.
+meta_learn_params = bbb.metalearn.MetaLearn(train_data, test_data, epochs, max_evals_train, max_evals_test).train(task=None)
+```
