@@ -73,4 +73,4 @@ print(best_params)
 Meta-Learning
 -------------
 If you want to try the meta-learning algorithm for your tasks, then you need two training and test lists, there should be data sets similar to yours for which you will use hyperparameters.
-This algorithm is based on the mamma algorithm and is optimized for hyperparameters while the mamma is built for weights.
+This algorithm is based on the MAML algorithm and is optimized for hyperparameters while the MAML is built for weights.
