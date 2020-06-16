@@ -30,8 +30,7 @@ class MetaLearn:
                     result_params = BayesOptMeta(train_data, train_labels).process_xgb_clf_meta(self.max_evals_train, self.meta_params)
                     hyperparams_.append(result_params)
                 else:
-                    print("Please set the value for the 'task' parameter as 'reg' or 'clf'")
-                    return "Please set the value for the 'task' parameter as 'reg' or 'clf'"
+                    raise ValueError("Please set the value for the 'task' parameter as 'reg' or 'clf'")
         
             dict_test = {}
             for key in hyperparams_[0]:
