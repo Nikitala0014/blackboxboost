@@ -1,3 +1,5 @@
+import pickle
+import os 
 from blackboxboost.preprocess_for_meta import DataPreprocess
 from blackboxboost.BayesOpt import xgb_para
 import pandas as pd 
@@ -5,7 +7,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from sklearn.ensemble import VotingRegressor, VotingClassifier
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import normalize, StandardScaler, KBinsDiscretizer
 from sklearn.model_selection import train_test_split
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials, STATUS_FAIL
 from hyperopt.fmin import generate_trials_to_calculate
@@ -76,12 +78,9 @@ class BayesOptMeta:
         return result
 
     def meta_param_xgb_clf(self):
-        data = pd.concat([self.data, self.labels], axis=1)
-        data_ = pd.DataFrame(normalize(data))
-        data_.columns = data.columns
-        x = data_.drop([data_.columns[-1]], axis=1)
-        y = data_.iloc[:, -1:]
-        if len(data) > 3000:
+        x = pd.DataFrame(normalize(self.data))
+        y = self.labels
+        if len(self.data) > 3000:
             x = x.iloc[:3000]
             y = y.iloc[:3000]
         mfe = MFE(groups=['general', 'statistical'])
@@ -99,12 +98,16 @@ class BayesOptMeta:
             feature_data.append(v)
 
         feature_ = csr_matrix(feature_data)
-
-        url = 'https://raw.githubusercontent.com/Nikitala0014/blackboxboost/master/blackboxboost/feature_data_clf.csv'
+        
+        url = 'https://raw.githubusercontent.com/Nikitala0014/blackboxboost/master/blackboxboost/feature_data/feature_data_clf.csv'
         feature_clf = pd.read_csv(url, index_col=0)
         feature_clf = feature_clf.drop([12], axis=0)
         kmeans_clf = KMeans(n_clusters=3, random_state=2)
         kmeans_clf.fit(feature_clf)
+        
+        #file_dir = os.path.dirname(os.path.realpath(__file__))
+        #file_name = os.path.join(file_dir, 'kmeans_model\model_clf.pkl')
+        #model_clf = pickle.load(open(file_name, 'rb'))
 
         meta_params_0_clf = {'subsample': 0.85871509130206, 'n_estimators': 548, 'colsample_bytree': 0.6159585946755198, 'max_depth': 6, 'learning_rate': 0.1519163133871961, 'min_child_weight': 0}
         meta_params_1_clf = {'subsample': 0.8910152781465692, 'n_estimators': 264, 'colsample_bytree': 0.5534115708933309, 'max_depth': 9, 'learning_rate': 0.10132128433332305, 'min_child_weight': 0}    
@@ -119,14 +122,14 @@ class BayesOptMeta:
             return meta_params_2_clf
 
     def meta_param_xgb_reg(self):
-        data = pd.concat([self.data, self.labels], axis=1)
-        data_ = pd.DataFrame(normalize(data))
-        data_.columns = data.columns
-        x = data_.drop([data_.columns[-1]], axis=1)
-        y = data_.iloc[:, -1:]
-        if len(data) > 3000:
+        scaler = StandardScaler()
+        x = pd.DataFrame(scaler.fit_transform(self.data))
+        est = KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='uniform')
+        y = pd.DataFrame(est.fit_transform(self.labels))
+        if len(self.data) > 3000:
             x = x.iloc[:3000]
             y = y.iloc[:3000]
+            return x, y
         mfe = MFE(groups=['general', 'statistical'])
         mfe.fit(x.values, y.values)
         ft = mfe.extract()
@@ -134,7 +137,7 @@ class BayesOptMeta:
         feature_dict = {x:y for x, y in zip(ft[0], ft[1])}
 
         for k, v in feature_dict.items():
-            if math.isnan(v):
+            if math.isnan(v) or math.isinf(v):
                 feature_dict[k] = 0.00001
         
         feature_data = []
@@ -142,12 +145,16 @@ class BayesOptMeta:
             feature_data.append(v)
 
         feature_ = csr_matrix(feature_data)
-
-        url = 'https://raw.githubusercontent.com/Nikitala0014/blackboxboost/master/blackboxboost/feature_data_reg.csv'
+        
+        url = 'https://raw.githubusercontent.com/Nikitala0014/blackboxboost/master/blackboxboost/feature_data/feature_data_reg.csv'
         feature_reg = pd.read_csv(url, index_col=0)
         feature_reg = feature_reg.drop([2, 4], axis=0)
         kmeans_reg = KMeans(n_clusters=3, random_state=1)
         kmeans_reg.fit(feature_reg)
+        
+        #file_dir = os.path.dirname(os.path.realpath(__file__))
+        #file_name = os.path.join(file_dir, 'kmeans_model\model_reg.pkl')
+        #model_reg = pickle.load(open(file_name, 'rb'))
 
         meta_params_0_reg = {'n_estimators': 547, 'learning_rate': 0.14502110379186764, 'subsample': 0.8802447552806882, 'min_child_weight': 2, 'max_depth': 5, 'colsample_bytree': 0.6338079055523455}
         meta_params_1_reg = {'n_estimators': 482, 'learning_rate': 0.11999175898448614, 'subsample': 0.8842506424173399, 'min_child_weight': 3, 'max_depth': 3, 'colsample_bytree': 0.6768310665291043}
@@ -198,7 +205,7 @@ class BayesOptMeta:
         return model_ensemble, best_params
 
     def ensemble_of_best_params_xgb_clf(self, max_evals):
-        best_params = self.params_to_ensemble(fn='xgb_clf', space=xgb_para, trials=trials, algo=tpe.suggest, max_evals=max_evals)
+        best_params = self.params_to_ensemble(fn_name='xgb_clf', space=xgb_para, algo=tpe.suggest, max_evals=max_evals)
 
         models_to_voting = {}
         for i in range(len(best_params)):
