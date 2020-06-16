@@ -21,9 +21,11 @@ test data to the algorithm as in the kaggle, because there you need the same num
 ```
 # Works with missing and categorical values and also normalizes.
 # You must use this or your methods before passing to the methods clf or reg below.
+# Use this for Bayesian optimization without meta-learning (BayesOpt)
 train_data = bbb.preprocess_for_meta.DataPreprocess(train_).normalize()
 
 # Without normalization, only categorical and missing values.
+# Use this for Bayesian optimization with meta-learning (BayesOptMeta)
 train_data = bbb.preprocess_for_meta.CatVariables(train_).oh_cols()
 ```
 Use this if you have test data for which you need to build and train a model:
