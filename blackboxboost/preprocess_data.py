@@ -3,60 +3,60 @@ from sklearn.preprocessing import OneHotEncoder, normalize
 import pandas as pd
 
 class MissingValue:
-    def __init__(self, train_data, test_data):
-        self.train_data = train_data
-        self.test_data = test_data
+    def __init__(self, data):
+        self.data = data
 
-    def impute(self, data):
-        cols_with_missing = [col for col in data.columns
-                            if data[col].isnull().any()]
+    def impute(self):
+        cols_with_missing = [col for col in self.data.columns
+                            if self.data[col].isnull().any()]
 
         if not cols_with_missing:
-            return data
+            return self.data
 
-        s = data[cols_with_missing].dtypes == 'object'
+        s = self.data[cols_with_missing].dtypes == 'object'
         object_cols = list(s[s].index)
 
-        f = data[cols_with_missing].dtypes == 'float64'
+        f = self.data[cols_with_missing].dtypes == 'float64'
         float_cols = list(f[f].index)
 
-        i = data[cols_with_missing].dtypes == 'int64'
+        i = self.data[cols_with_missing].dtypes == 'int64'
         int_cols = list(i[i].index)
 
         num_cols = float_cols + int_cols
         
         cols_with_missing_ = num_cols + object_cols
         
-        not_missing = data.drop(cols_with_missing_, axis=1)
+        not_missing = self.data.drop(cols_with_missing_, axis=1)
+        
 
         if num_cols and object_cols:
             mean_imputer = SimpleImputer(strategy='mean')
-            imputed_num = pd.DataFrame(mean_imputer.fit_transform(data[num_cols]))
+            imputed_num = pd.DataFrame(mean_imputer.fit_transform(self.data[num_cols]))
+            imputed_num.columns = self.data[num_cols].columns
 
             const_imputer = SimpleImputer(strategy='most_frequent')
-            imputed_obj = pd.DataFrame(const_imputer.fit_transform(data[object_cols]))
+            imputed_obj = pd.DataFrame(const_imputer.fit_transform(self.data[object_cols]))
+            imputed_obj.columns = self.data[object_cols].columns
 
             imputed_data = pd.concat([imputed_num, imputed_obj], axis=1)
             finall_data = pd.concat([not_missing, imputed_data], axis=1)
-
-            finall_data.columns = data.columns
 
             return finall_data
         
         if num_cols:
             mean_imputer = SimpleImputer(strategy='mean')
-            imputed_num = pd.DataFrame(mean_imputer.fit_transform(data[num_cols]))
+            imputed_num = pd.DataFrame(mean_imputer.fit_transform(self.data[num_cols]))
+            imputed_num.columns = self.data[num_cols].columns
 
             finall_data = pd.concat([not_missing, imputed_num], axis=1)
             
         if object_cols:
             const_imputer = SimpleImputer(strategy='most_frequent')
-            imputed_obj = pd.DataFrame(const_imputer.fit_transform(data[object_cols]))
+            imputed_obj = pd.DataFrame(const_imputer.fit_transform(self.data[object_cols]))
+            imputed_obj.columns = self.data[object_cols].columns
             
             finall_data = pd.concat([not_missing, imputed_obj], axis=1)
-
-        finall_data.columns = data.columns
-
+            
         return finall_data
 
     def imputer_data(self):
